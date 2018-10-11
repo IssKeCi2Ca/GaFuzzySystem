@@ -7,77 +7,65 @@ Created on Mon Oct  8 01:08:18 2018
 # pylint: disable=no-member
 
 import random
+import numpy
 
+from deap import algorithms
 from deap import base
 from deap import creator
 from deap import tools
 
-creator.create("FitnessMax", base.Fitness, weights=(-1.0, 1.0))
+def evaluateInd(individual):
+    #Get from Fuzzy?    
+    s = str(individual)
+    print (individual)
+    result = len(s)
+    return result,
+
+creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMax)
 toolbox = base.Toolbox()
 
 MAMethod = ['SMA', 'AMA', 'TFMA', 'TMA']
-MNValues_MIN, MNValues_MAX = 1, 32
-FuzzyExtent = ['EL', 'VL', 'L', 'M', 'H', 'VH', 'EH']
-Recommend_MIN, Recommend_MAX = -10, 10
+RSIPeriod = ['5','10', '14', '20', '25']
+MValue = ['10', '20', '50', '100', '200']
+NValue = ['1', '3', '5' ,'10', '15', '20']
 
 N_CYCLES = 1
-POP_SIZE = 10
-CXPB, MUTPB, NGEN= 0.5, 0.2, 20
 
 toolbox.register("attr_mamethod", random.choice, MAMethod)
-toolbox.register("attr_mnvalues", random.randint, MNValues_MIN, MNValues_MAX)
-toolbox.register("attr_fuzzzyextent", random.choice, FuzzyExtent)
-toolbox.register("attr_recommend", random.randint, Recommend_MIN, Recommend_MAX)
+toolbox.register("attr_rsiperiod", random.choice, RSIPeriod)
+toolbox.register("attr_mvalue", random.choice, MValue)
+toolbox.register("attr_nvalue", random.choice, NValue)
 
 toolbox.register("individual", tools.initCycle, creator.Individual,
-                 (toolbox.attr_mamethod, toolbox.attr_mnvalues, 
-                  toolbox.attr_fuzzzyextent, toolbox.attr_recommend), n=N_CYCLES)
+                 (toolbox.attr_mamethod, toolbox.attr_rsiperiod, 
+                  toolbox.attr_mvalue, toolbox.attr_nvalue), n=N_CYCLES)
 
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
-pop = toolbox.population(POP_SIZE)
 
-# printing the list using loop 
-for x in range(POP_SIZE): 
-   print (pop[x])
-
-# def evaluateInd(individual):
-#     # Do some computation
-#     return result,
-
+# Operator registering
+toolbox.register("evaluate", evaluateInd)
 toolbox.register("mate", tools.cxTwoPoint)
-toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=1, indpb=0.2)
-toolbox.register("select", tools.selTournament, tournsize=3)
-# toolbox.register("evaluate", evaluateInd)
+# May need to write our own mutate function
+toolbox.register("mutate", tools.mutShuffleIndexes, indpb=0)
+toolbox.register("select", tools.selBest)
 
-for g in range(NGEN):
-    # Select the next generation individuals
-    offspring = toolbox.select(pop, len(pop))
-    # Clone the selected individuals
-    offspring = list(map(toolbox.clone, offspring))
+def main():
+    # random.seed(64)
+    MU, LAMBDA = 10, 20
+    pop = toolbox.population(n=MU)
+    hof = tools.ParetoFront()
+    stats = tools.Statistics(lambda ind: ind.fitness.values)
+    stats.register("avg", numpy.mean, axis=0)
+    stats.register("std", numpy.std, axis=0)
+    stats.register("min", numpy.min, axis=0)
+    stats.register("max", numpy.max, axis=0)
+    
+    pop, logbook = algorithms.eaMuPlusLambda(pop, toolbox, mu=MU, lambda_=LAMBDA,
+                                             cxpb=0.7, mutpb=0.3, ngen=40, 
+                                             stats=stats, halloffame=hof)
+    
+    return pop, logbook, hof
 
-# Apply crossover on the offspring
-for child1, child2 in zip(offspring[::2], offspring[1::2]):
-    if random.random() < CXPB:
-        toolbox.mate(child1, child2)
-        # del child1.fitness.values
-        # del child2.fitness.values
-
-# Apply mutation on the offspring
-# for mutant in offspring:
-#     if random.random() < MUTPB:
-#         toolbox.mutate(mutant)
-        # del mutant.fitness.values
-
-# # Evaluate the individuals with an invalid fitness
-# invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
-# fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
-# for ind, fit in zip(invalid_ind, fitnesses):
-#     ind.fitness.values = fit
-
-# The population is entirely replaced by the offspring
-pop[:] = offspring
-
-print('======================')
-for x in range(POP_SIZE): 
-   print (pop[x])
+if __name__ == "__main__":
+    main()
