@@ -58,7 +58,7 @@ class GA:
         MU, LAMBDA = popSize, 20
         pop = toolbox.population(n=MU)
         # hof = tools.ParetoFront()
-        hof = tools.HallOfFame(10)
+        hof = tools.HallOfFame(popSize)
         stats = tools.Statistics(lambda ind: ind.fitness.values)
         stats.register("avg", numpy.mean, axis=0)
         stats.register("std", numpy.std, axis=0)
