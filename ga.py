@@ -55,10 +55,20 @@ class GA:
         toolbox.register("mutate", tools.mutShuffleIndexes, indpb=0)
         toolbox.register("select", tools.selBest)
 
+        history = tools.History()
+        # Decorate the variation operators
+        toolbox.decorate("mate", history.decorator)
+        toolbox.decorate("mutate", history.decorator)
+
         MU, LAMBDA = popSize, 20
+
         pop = toolbox.population(n=MU)
+        history.update(pop)
+        print('\n%d elems in the History' % len(pop))
+        print (pop)
+        
         # hof = tools.ParetoFront()
-        hof = tools.HallOfFame(popSize)
+        hof = tools.HallOfFame(10)
         stats = tools.Statistics(lambda ind: ind.fitness.values)
         stats.register("avg", numpy.mean, axis=0)
         stats.register("std", numpy.std, axis=0)
