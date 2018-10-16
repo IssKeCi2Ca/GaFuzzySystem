@@ -3,7 +3,7 @@ import pprint
 
 def main():
     popSize = 10
-    pop = ga.GA.selectPop(popSize)
+    pop = ga.GA.selectPop(pop, popSize)
 
     for x in range(popSize): 
         print ("pop", [x], pop[x])

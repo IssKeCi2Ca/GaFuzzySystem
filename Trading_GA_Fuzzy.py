@@ -1,21 +1,5 @@
 import numpy as np #matrix math
-		
-#Genetic Algorithm Logic Goes here
-class GA:
-	def __init__(self):
-        # a place to store the layers
-		self.layers = [] 
-        # size of pooling area for max pooling
-		self.pool_size = None 
-
-	def GA(self, MACD):
-		self.MoreLogic()
-        #add the logic
-
-	def MoreLogic(self, X):        
-        #Any Extra Logic Goes here
-        max_i = self.classify(X)
-        return max_i[0]
+import ga
 
 #Fuzzy Logic Code Goes in here
 class Fuzzy:
@@ -36,13 +20,13 @@ class Fuzzy:
 #Implementation of Trading System - Updating Stocks,Cash Balance
 class Trading:
 	def __init__(self):
+		popSize = 10
         #initialise other variables SystemDate, Trading Reqd
 		Init_MarketRates()
 		#load our GA and Fuzzy Models
 		Training_Done= False
 		Trading_Required=False
-		rules= []#initialise rules to empty set
-		self.GA = GA()
+		rules = ga.GA.selectPop(popSize)
 		self.Fuzzy = Fuzzy()
     
     #Load the Rates in a Pandas Frame. All the Data Given can be converted to a CSV And imported into a frame

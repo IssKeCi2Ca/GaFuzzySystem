@@ -8,6 +8,8 @@ Created on Mon Oct  8 01:08:18 2018
 
 import random
 import numpy
+import pprint
+import AssetFuzzy
 
 from deap import algorithms
 from deap import base
@@ -22,9 +24,10 @@ class GA:
     def selectPop(popSize):
 
         def evaluateInd(individual):
-            #Get from Fuzzy?    
-            s = str(individual)
-            result = len(s)
+            # To test ga without using AssetFuzzy, uncomment the 2 lines below and comment the 3rd and 4th line below
+            # s = str(individual)
+            # result = len(s)
+            result = AssetFuzzy.fitness(individual)
             return result,
 
         creator.create("FitnessMax", base.Fitness, weights=(1.0,))
@@ -32,20 +35,20 @@ class GA:
         toolbox = base.Toolbox()
 
         MAMethod = ['SMA', 'AMA', 'TFMA', 'TMA']
-        RSIPeriod = ['5','10', '14', '20', '25']
         MValue = ['10', '20', '50', '100', '200']
         NValue = ['1', '3', '5' ,'10', '15', '20']
+        RSIPeriod = ['5','10', '14', '20', '25']
 
         N_CYCLES = 1
 
         toolbox.register("attr_mamethod", random.choice, MAMethod)
-        toolbox.register("attr_rsiperiod", random.choice, RSIPeriod)
         toolbox.register("attr_mvalue", random.choice, MValue)
         toolbox.register("attr_nvalue", random.choice, NValue)
+        toolbox.register("attr_rsiperiod", random.choice, RSIPeriod)
 
         toolbox.register("individual", tools.initCycle, creator.Individual,
-                        (toolbox.attr_mamethod, toolbox.attr_rsiperiod, 
-                        toolbox.attr_mvalue, toolbox.attr_nvalue), n=N_CYCLES)
+                        (toolbox.attr_mamethod, toolbox.attr_mvalue, 
+                        toolbox.attr_nvalue, toolbox.attr_rsiperiod), n=N_CYCLES)
 
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
@@ -65,7 +68,9 @@ class GA:
         pop = toolbox.population(n=MU)
         history.update(pop)
         print('\n%d elems in the History' % len(pop))
-        print (pop)
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(pop)
+
         
         # hof = tools.ParetoFront()
         hof = tools.HallOfFame(10)
@@ -80,6 +85,7 @@ class GA:
                                                     stats=stats, halloffame=hof)
 
         print('\n%d elems in the HallOfFame' % len(hof))
-        print (hof)
-        
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(pop)
+
         return pop
