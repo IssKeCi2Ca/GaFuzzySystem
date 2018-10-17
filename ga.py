@@ -9,8 +9,9 @@ Created on Mon Oct  8 01:08:18 2018
 import random
 import numpy
 import pprint
-import AssetFuzzy2
-
+import pickle
+# import AssetFuzzy2
+from pathlib import Path
 from deap import algorithms
 from deap import base
 from deap import creator
@@ -24,10 +25,9 @@ class GA:
     def selectPop(popSize):
 
         def evaluateInd(ind):
-            # To test ga without using AssetFuzzy, uncomment the 2 lines below and comment the 3rd and 4th line b
-            # s = str(ind)
-            # result = len(s)
-            result = AssetFuzzy2.fitness(ind[0], ind[1], ind[2], ind[3])
+            s = str(ind)
+            result = len(s)
+            # result = AssetFuzzy2.fitness(ind[0], ind[1], ind[2], ind[3])
             return result,
 
         creator.create("FitnessMax", base.Fitness, weights=(1.0,))
@@ -58,22 +58,18 @@ class GA:
         toolbox.register("mutate", tools.mutShuffleIndexes, indpb=0)
         toolbox.register("select", tools.selBest)
 
-        history = tools.History()
-        # Decorate the variation operators
-        toolbox.decorate("mate", history.decorator)
-        toolbox.decorate("mutate", history.decorator)
-
         MU, LAMBDA = popSize, 20
-
         pop = toolbox.population(n=MU)
-        history.update(pop)
-        print('\n%d elems in the History' % len(pop))
-        pp = pprint.PrettyPrinter(indent=4)
-        pp.pprint(pop)
-
-        
-        # hof = tools.ParetoFront()
         hof = tools.HallOfFame(10)
+
+        hof_file = Path("hof.p")
+        if hof_file.is_file():
+            ppop = pickle.load( open("hof.p", "rb"))
+            hof.update(ppop)
+            print('\n%d elems in the History' % len(ppop))
+            pp = pprint.PrettyPrinter(indent=4)
+            pp.pprint(ppop)
+
         stats = tools.Statistics(lambda ind: ind.fitness.values)
         stats.register("avg", numpy.mean, axis=0)
         stats.register("std", numpy.std, axis=0)
@@ -82,10 +78,11 @@ class GA:
 
         pop, logbook = algorithms.eaMuPlusLambda(pop, toolbox, mu=MU, lambda_=LAMBDA,
                                                     cxpb=0.7, mutpb=0.3, ngen=40, 
-                                                    stats=stats, halloffame=hof)
+                                                    stats=stats, halloffame=hof, verbose=True)
 
         print('\n%d elems in the HallOfFame' % len(hof))
         pp = pprint.PrettyPrinter(indent=4)
         pp.pprint(pop)
 
+        pickle.dump(pop, open("hof.p", "wb"))
         return pop
