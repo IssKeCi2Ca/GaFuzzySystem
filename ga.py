@@ -9,7 +9,7 @@ Created on Mon Oct  8 01:08:18 2018
 import random
 import numpy
 import pprint
-import AssetFuzzy
+import AssetFuzzy2
 
 from deap import algorithms
 from deap import base
@@ -23,11 +23,11 @@ class GA:
 
     def selectPop(popSize):
 
-        def evaluateInd(individual):
-            # To test ga without using AssetFuzzy, uncomment the 2 lines below and comment the 3rd and 4th line below
-            # s = str(individual)
+        def evaluateInd(ind):
+            # To test ga without using AssetFuzzy, uncomment the 2 lines below and comment the 3rd and 4th line b
+            # s = str(ind)
             # result = len(s)
-            result = AssetFuzzy.fitness(individual)
+            result = AssetFuzzy2.fitness(ind[0], ind[1], ind[2], ind[3])
             return result,
 
         creator.create("FitnessMax", base.Fitness, weights=(1.0,))
