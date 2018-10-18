@@ -10,7 +10,7 @@ import random
 import numpy
 import pprint
 import pickle
-# import AssetFuzzy2
+import AssetFuzzy3
 from pathlib import Path
 from deap import algorithms
 from deap import base
@@ -25,9 +25,9 @@ class GA:
     def selectPop(popSize):
 
         def evaluateInd(ind):
-            s = str(ind)
-            result = len(s)
-            # result = AssetFuzzy2.fitness(ind[0], ind[1], ind[2], ind[3])
+            # s = str(ind)
+            # result = len(s)
+            result = AssetFuzzy3.fitness(ind[0], ind[1], ind[2], ind[3])
             return result,
 
         creator.create("FitnessMax", base.Fitness, weights=(1.0,))
@@ -55,12 +55,12 @@ class GA:
         # Operator registering
         toolbox.register("evaluate", evaluateInd)
         toolbox.register("mate", tools.cxTwoPoint)
-        toolbox.register("mutate", tools.mutShuffleIndexes, indpb=0)
+        toolbox.register("mutate", tools.mutUniformInt, low=0, up=1, indpb=0.85)
         toolbox.register("select", tools.selBest)
 
         MU, LAMBDA = popSize, 20
         pop = toolbox.population(n=MU)
-        hof = tools.HallOfFame(10)
+        hof = tools.HallOfFame(5)
 
         hof_file = Path("hof.p")
         if hof_file.is_file():
@@ -69,7 +69,7 @@ class GA:
             print('\n%d elems in the History' % len(ppop))
             pp = pprint.PrettyPrinter(indent=4)
             pp.pprint(ppop)
-
+           
         stats = tools.Statistics(lambda ind: ind.fitness.values)
         stats.register("avg", numpy.mean, axis=0)
         stats.register("std", numpy.std, axis=0)
