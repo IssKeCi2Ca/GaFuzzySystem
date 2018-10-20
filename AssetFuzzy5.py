@@ -342,8 +342,8 @@ FCPO.head(30)
 pd.set_option('display.expand_frame_repr', False) 
 
 ma = 'SMA' 
-m = 50
-n = 15
+m = 26
+n = 12
 rsi = 14
 
 s = 9  # period for MACD signal line
